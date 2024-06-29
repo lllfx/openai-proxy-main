@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  openai-proxy:
+    image: openai-proxy:latest
+    restart: always
+    container_name: openai-proxy
+    ports:
+      - "18788:18788"
+    environment:
+      - OPENAI_API_KEY=xxx
+      - BASE_URL=xxx
+      - PORT=18788
