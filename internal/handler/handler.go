@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/json"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/gin-gonic/gin"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
@@ -14,6 +18,7 @@ var (
 	openAIApiAddr = "https://api.openai.com"
 	authHeader    = "Authorization"
 	openaiProxy   *httputil.ReverseProxy
+	modelSet      mapset.Set[string]
 )
 
 // NewProxy takes target host and creates a reverse proxy
@@ -44,27 +49,37 @@ func modifyRequest(req *http.Request) {
 		slog.Info("token found in request")
 		req.Header.Del(authHeader)
 		req.Header.Set(authHeader, "Bearer "+defaultToken)
-		//bearerHeader := req.Header.Get(authHeader)
-		//arr := strings.Split(bearerHeader, " ")
-		//var key string
-		//if len(arr) == 2 {
-		//	key = arr[1]
-		//}
-		//if key == "null" || strings.Contains(key, "null") || strings.Contains(key, "xxx") {
-		//	slog.Info(" token is null, using default token")
-		//	req.Header.Del(authHeader)
-		//	req.Header.Set(authHeader, "Bearer "+defaultToken)
-		//}
 	}
-
 	req.URL.RawQuery = ""
-	//fmt.Println("重写了")
-	//fmt.Println(req.URL.String())
-	//byteData, err := io.ReadAll(req.Body)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(string(byteData))
+	dealSign := false
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	slog.Info(string(body))
+	//重写
+	reqJson := make(map[string]interface{})
+	err = json.Unmarshal(body, &reqJson)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	if v, ok := reqJson["model"]; ok {
+		if !modelSet.ContainsOne(v.(string)) {
+			reqJson["model"] = "Qwen/Qwen2-7B-Instruct"
+			body, err = json.Marshal(reqJson)
+			if err != nil {
+				slog.Error(err.Error())
+			} else {
+				slog.Info(string(body))
+				req.Body = io.NopCloser(bytes.NewBuffer(body))
+				req.ContentLength = int64(len(body))
+				dealSign = true
+			}
+		}
+	}
+	if !dealSign {
+		req.Body = io.NopCloser(bytes.NewBuffer(body))
+	}
 }
 
 func errorHandler() func(http.ResponseWriter, *http.Request, error) {
@@ -93,6 +108,12 @@ func Router(r *gin.Engine) {
 func Init() {
 	defaultToken = os.Getenv("OPENAI_API_KEY")
 	openAIApiAddr = os.Getenv("BASE_URL")
+	if defaultToken == "" {
+		defaultToken = "sk-uqcxqayzggtbdipfcwxtavzvkqohhxftkpeilvlglyucpkrk"
+	}
+	if openAIApiAddr == "" {
+		openAIApiAddr = "https://api.siliconflow.cn/"
+	}
 	slog.Info("defaultToken", defaultToken)
 	slog.Info("openAIApiAddr", openAIApiAddr)
 	proxy, err := NewProxy(openAIApiAddr)
@@ -101,6 +122,14 @@ func Init() {
 		return
 	}
 	openaiProxy = proxy
+	modelSet = mapset.NewSet[string]()
+	modelSet.Add("Qwen/Qwen2-7B-Instruct")
+	modelSet.Add("Qwen/Qwen2-1.5B-Instruct")
+	modelSet.Add("Qwen/Qwen1.5-7B-Chat")
+	modelSet.Add("THUDM/glm-4-9b-chat")
+	modelSet.Add("THUDM/chatglm3-6b")
+	modelSet.Add("01-ai/Yi-1.5-9B-Chat-16K")
+	modelSet.Add("01-ai/Yi-1.5-6B-Chat")
 }
 
 func proxy(c *gin.Context) {

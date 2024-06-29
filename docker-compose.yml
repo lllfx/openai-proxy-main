@@ -7,6 +7,6 @@ services:
     ports:
       - "18788:18788"
     environment:
-      - OPENAI_API_KEY=xxx
-      - BASE_URL=xxx
+      - OPENAI_API_KEY=
+      - BASE_URL=
       - PORT=18788
