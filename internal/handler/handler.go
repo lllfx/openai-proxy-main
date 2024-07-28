@@ -109,10 +109,10 @@ func Init() {
 	defaultToken = os.Getenv("OPENAI_API_KEY")
 	openAIApiAddr = os.Getenv("BASE_URL")
 	if defaultToken == "" {
-		defaultToken = "sk-uqcxqayzggtbdipfcwxtavzvkqohhxftkpeilvlglyucpkrk"
+		defaultToken = "默认值"
 	}
 	if openAIApiAddr == "" {
-		openAIApiAddr = "https://api.siliconflow.cn/"
+		openAIApiAddr = "默认值"
 	}
 	slog.Info("defaultToken", defaultToken)
 	slog.Info("openAIApiAddr", openAIApiAddr)

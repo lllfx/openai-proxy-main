@@ -8,13 +8,9 @@ import (
 
 func main() {
 	handler.Init()
-	//err := os.Setenv("PORT", "18788")
-	//if err != nil {
-	//	panic(err)
-	//}
-	app := core.New(&app.Config{
+	proxyAPP := core.New(&app.Config{
 		Service: "openai-proxy",
 		Router:  handler.Router,
 	})
-	app.Run()
+	proxyAPP.Run()
 }
