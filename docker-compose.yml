@@ -5,8 +5,10 @@ services:
     restart: always
     container_name: openai-proxy
     ports:
-      - "18788:18788"
+      - "18770:18788"
     environment:
-      - OPENAI_API_KEY=
-      - BASE_URL=
+      - OPENAI_API_KEY=xxx
+      - BASE_URL=https://api.siliconflow.cn/
       - PORT=18788
+    extra_hosts:
+      - "api.siliconflow.cn:106.14.246.150"
