@@ -2,8 +2,6 @@ module github.com/orvice/openapi-proxy
 
 go 1.21.0
 
-toolchain go1.21.3
-
 require (
 	butterfly.orx.me/core v0.0.0-20231001144531-d59b7ef0ef10
 	github.com/deckarep/golang-set/v2 v2.6.0

@@ -91,11 +91,6 @@ func errorHandler() func(http.ResponseWriter, *http.Request, error) {
 
 func modifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
-		//byteData, err := io.ReadAll(resp.Body)
-		//if err != nil {
-		//	panic(err)
-		//}
-		//fmt.Println("modifyResponse", string(byteData))
 		return nil
 	}
 }
@@ -109,10 +104,10 @@ func Init() {
 	defaultToken = os.Getenv("OPENAI_API_KEY")
 	openAIApiAddr = os.Getenv("BASE_URL")
 	if defaultToken == "" {
-		defaultToken = "默认值"
+		defaultToken = ""
 	}
 	if openAIApiAddr == "" {
-		openAIApiAddr = "默认值"
+		openAIApiAddr = "https://api.siliconflow.cn/"
 	}
 	slog.Info("defaultToken", defaultToken)
 	slog.Info("openAIApiAddr", openAIApiAddr)
